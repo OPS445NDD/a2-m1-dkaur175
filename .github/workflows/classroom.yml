@@ -1,0 +1,40 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: TestPercent
+      id: testpercent
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: TestPercent
+        setup-command: python3 ./checkA2.py -f -v
+        command: python3 ./checkA2.py -f -v TestPercent
+        timeout: 10
+        max-score: 5
+    - name: TestMemFuncs
+      id: testmemfuncs
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: TestMemFuncs
+        setup-command: python3 ./checkA2.py -f -v
+        command: python3 ./checkA2.py -f -v TestMemFuncs
+        timeout: 10
+        max-score: 5
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TESTPERCENT_RESULTS: "${{steps.testpercent.outputs.result}}"
+        TESTMEMFUNCS_RESULTS: "${{steps.testmemfuncs.outputs.result}}"
+      with:
+        runners: testpercent,testmemfuncs
